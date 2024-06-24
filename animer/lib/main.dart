@@ -41,6 +41,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _controller = TextEditingController();
 
+  var _formKey = GlobalKey<FormState>();
+
   bool isWaiting = false;
   @override
   Widget build(BuildContext context) {
@@ -56,11 +58,36 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               '何見る問題',
             ),
-            TextField(
-              controller: _controller,
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.4,
+              child: Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    icon: Icon(Icons.person),
+                    labelText: 'ユーザー名',
+                    hintText: 'Enter your username',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'ユーザー名を入力してください';
+                    }
+                    return null;
+                  },
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
+                if (!_formKey.currentState!.validate()) return;
                 if (isWaiting) return;
                 isWaiting = true;
                 String docName = "";
@@ -84,12 +111,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(builder: (context) {
                     return RoomPage(
                       roomName: docName,
+                      userName: _controller.text,
                     );
                   }),
                 );
               },
               child: Text(
-                "ボタン",
+                "開始",
               ),
             ),
           ],
