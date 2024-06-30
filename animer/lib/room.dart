@@ -4,6 +4,7 @@ import 'package:animer/result.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class RoomPage extends StatefulWidget {
   final String roomName;
@@ -27,14 +28,20 @@ class _RoomPageState extends State<RoomPage> {
         if (!snapshot.hasData) {
           return Text("読み込み中...もうちょっと待ってね❤");
         } else if (snapshot.data?.get("result") != "") {
-          return ResultPage(title: snapshot.data?.get("result").toString());
+          return ResultPage(
+              title: snapshot.data?.get("result")["title"],
+              user: snapshot.data?.get("result")["user"]);
           // Navigator.of(context).push(
           //   MaterialPageRoute(builder: (context) {
           //     return ResultPage();
           //   }),
           // );
         }
-        var titles = snapshot.data?.get("titles");
+        List<Map<String, dynamic>> titles =
+            snapshot.data?.get("titles").toList();
+        titles.sort((a, b) =>
+            (a["atTime"] as Timestamp).compareTo(b["atTime"] as Timestamp));
+        //var keys = titles.keys.toList();
         return Scaffold(
           body: Center(
             child: Column(
@@ -46,6 +53,18 @@ class _RoomPageState extends State<RoomPage> {
                         leading: Icon(Icons.person),
                         title: Text(titles[index]["title"]),
                         subtitle: Text(titles[index]["user"]),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () async {
+                            //様子見
+                            // await FirebaseFirestore.instance
+                            //     .collection("room")
+                            //     .doc(widget.roomName)
+                            //     .update({
+                            //   "titles": FieldValue.arrayRemove([index])
+                            // });
+                          },
+                        ),
                       );
                     },
                     itemCount: titles.length,
@@ -73,13 +92,17 @@ class _RoomPageState extends State<RoomPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
+                    int x = Random().nextInt(titles.length);
                     await FirebaseFirestore.instance
                         .collection("room")
                         .doc(widget.roomName)
                         .update(
                       {
-                        "result": titles[Random().nextInt(titles.length)]
-                            ["title"]
+                        "result": {
+                          "title": titles[x]["title"],
+                          "user": titles[x]["user"]
+                        },
+                        "atTime": FieldValue.serverTimestamp()
                       },
                     );
                   },
@@ -97,16 +120,17 @@ class _RoomPageState extends State<RoomPage> {
   }
 
   void animeSubmit() async {
+    String dataTitle = Uuid().v1();
     await FirebaseFirestore.instance
         .collection("room")
         .doc(widget.roomName)
         .update(
       {
-        "titles": FieldValue.arrayUnion(
-          [
-            {"title": _controller.text, "user": widget.userName}
-          ],
-        )
+        "titles.$dataTitle": {
+          "title": _controller.text,
+          "user": widget.userName,
+          "atTime": FieldValue.serverTimestamp()
+        }
       },
     );
     _controller.clear();

@@ -1,4 +1,6 @@
 import 'package:animer/firebase_options.dart';
+import 'package:animer/history.dart';
+import 'package:animer/main/main_view.dart';
 import 'package:animer/room.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: '何見る問題'),
+      home: MainPage(),
     );
   }
 }
@@ -104,22 +106,35 @@ class _MyHomePageState extends State<MyHomePage> {
                   await FirebaseFirestore.instance
                       .collection("room")
                       .doc(docName)
-                      .set({"result": "", "titles": []});
+                      .set({"result": "", "titles": [],"atTime":""});
                 }
                 isWaiting = false;
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) {
-                    return RoomPage(
-                      roomName: docName,
-                      userName: _controller.text,
-                    );
-                  }),
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return RoomPage(
+                        roomName: docName,
+                        userName: _controller.text,
+                      );
+                    },
+                  ),
                 );
               },
               child: Text(
                 "開始",
               ),
             ),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return HistoryPage();
+                      },
+                    ),
+                  );
+                },
+                child: Text("履歴"))
           ],
         ),
       ),

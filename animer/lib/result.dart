@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class ResultPage extends StatefulWidget {
   final String? title;
-  const ResultPage({super.key, this.title});
+  final String? user;
+  const ResultPage({super.key, this.title, this.user});
 
   @override
   State<ResultPage> createState() => _ResultPageState();
@@ -14,7 +15,13 @@ class _ResultPageState extends State<ResultPage> {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: Text("見るアニメは..." + (widget.title??"")),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("見るアニメは..." + (widget.title ?? "")),
+            Text("投稿者:${widget.user}")
+          ],
+        ),
       ),
     );
   }
